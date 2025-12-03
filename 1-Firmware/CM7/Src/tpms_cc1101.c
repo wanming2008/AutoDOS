@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    tpms_cc1101.c
-  * @brief   胎压监测系统(TPMS)攻击模块实现
-  *          使用TI CC1101芯片进行433MHz胎压信号模拟
+  * @brief   Tire Pressure Monitoring System (TPMS) attack module implementation
+  *          Simulates 433MHz tire pressure signals using the TI CC1101 chip
   ******************************************************************************
   */
 

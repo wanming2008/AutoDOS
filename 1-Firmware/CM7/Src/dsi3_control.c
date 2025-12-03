@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    dsi3_control.c
-  * @brief   DSI3总线控制模块实现
-  *          通过SPI控制DSI3转换芯片
+  * @brief   DSI3 bus control module implementation
+  *          Controls DSI3 conversion chips via SPI
   ******************************************************************************
   */
 

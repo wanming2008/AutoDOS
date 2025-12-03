@@ -3,7 +3,7 @@
   ******************************************************************************
   * @file           : main.c
   * @brief          : AutoDOS Integrated Firmware - Main program body
-  *                   整合了CAN中间人、超声波雷达攻击、毫米波雷达攻击功能
+  *                   Integrated with CAN man-in-the-middle, ultrasonic radar attack, and millimeter-wave radar attack functionalities
   ******************************************************************************
   * @attention
   *

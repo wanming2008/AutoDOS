@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    mmwave_attack.c
-  * @brief   毫米波雷达攻击模块实现
-  *          通过修改CANFD消息实现毫米波雷达攻击
+  * @brief   Millimeter-wave radar attack module implementation
+  *          Implements millimeter-wave radar attacks by modifying CAN FD messages
   ******************************************************************************
   */
 

@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    dsi3_control.h
-  * @brief   DSI3总线控制模块头文件
-  *          通过SPI控制DSI3转换芯片，实现超声波雷达DSI3总线通信
+  * @brief   DSI3 Bus Control Module Header File
+  *          Controls DSI3 conversion chips via SPI to implement ultrasonic radar DSI3 bus communication
   ******************************************************************************
   */
 

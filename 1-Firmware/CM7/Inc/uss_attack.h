@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
   * @file    uss_attack.h
-  * @brief   超声波雷达攻击模块头文件
-  *          支持干扰和欺骗两种攻击模式
+  * @brief   Ultrasonic radar attack module header file
+  *          Supports two attack modes: interference and spoofing
   ******************************************************************************
   */
 

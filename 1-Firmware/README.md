@@ -1,189 +1,186 @@
 # AutoDOS
 
-## 项目简介
+## Project Overview
 
-AutoDOS是一个基于STM32H7双核架构的ADAS（高级驾驶辅助系统）安全测试工具固件。本项目整合了CAN中间人、超声波雷达攻击和毫米波雷达攻击功能，为ADAS安全研究提供完整的硬件解决方案。
+AutoDOS is an ADAS (Advanced Driver Assistance Systems) security testing tool firmware based on the STM32H7 dual-core architecture. This project integrates CAN man-in-the-middle, ultrasonic radar attack, and millimeter-wave radar attack functionalities, providing a comprehensive hardware solution for ADAS security research.
 
-## 功能特性
+## Features
 
-### 1. CAN中间人功能
-- 双向转发FDCAN1和FDCAN2之间的CAN消息
-- 支持实时修改CAN消息ID和数据
-- 支持7个独立的篡改规则配置
-- 支持CAN 2.0和CANFD协议
+### 1. CAN Man-in-the-Middle Function
+- Bidirectional forwarding of CAN messages between FDCAN1 and FDCAN2
+- Supports real-time modification of CAN message IDs and data
+- Supports 7 independent tampering rule configurations
+- Supports CAN 2.0 and CAN FD protocols
 
-### 2. 超声波雷达攻击
-- **干扰模式**: 持续输出48kHz超声波信号，干扰超声波雷达
-- **欺骗模式**: 检测雷达发射信号，延迟发射虚假回波，实现距离欺骗
-- 可配置欺骗延迟距离
+### 2. Ultrasonic Radar Attack
+- **Interference Mode**: Continuously outputs 48kHz ultrasonic signals to interfere with ultrasonic radar
+- **Spoofing Mode**: Detects radar transmission signals and delays transmitting false echoes to achieve distance spoofing
+- Configurable spoofing delay distance
 
-### 3. 毫米波雷达攻击
-- 识别毫米波雷达CAN消息
-- 修改距离、目标数量等关键数据
-- 通过CAN中间人功能转发修改后的消息
+### 3. Millimeter-Wave Radar Attack
+- Identifies millimeter-wave radar CAN messages
+- Modifies key data such as distance and target count
+- Forwards modified messages via the CAN man-in-the-middle function
 
-### 4. DSI3总线控制
-- 通过SPI控制DSI3转换芯片
-- 支持DSI3总线嗅探、欺骗和干扰
-- 支持最多4个DSI3传感器通道
-- 实现超声波雷达DSI3协议攻击
+### 4. DSI3 Bus Control
+- Controls DSI3 conversion chip via SPI
+- Supports DSI3 bus sniffing, spoofing, and interference
+- Supports up to 4 DSI3 sensor channels
+- Implements ultrasonic radar DSI3 protocol attacks
 
-### 5. TPMS胎压监测系统攻击
-- 使用TI CC1101芯片进行433MHz信号模拟
-- 支持胎压欺骗（低胎压、高胎压、爆胎）
-- 支持4个轮胎位置
-- 支持TPMS信号嗅探
+### 5. TPMS (Tire Pressure Monitoring System) Attack
+- Uses TI CC1101 chip for 433MHz signal simulation
+- Supports tire pressure spoofing (low pressure, high pressure, tire burst)
+- Supports 4 tire positions
+- Supports TPMS signal sniffing
 
-## 硬件平台
+## Hardware Platform
 
-- **主控芯片**: STM32H745ZITx（双核：Cortex-M7 + Cortex-M4）
-- **工作频率**: 240MHz（CM7核心）
-- **工作电压**: 3.3V
+- **Main Controller**: STM32H745ZITx (Dual-core: Cortex-M7 + Cortex-M4)
+- **Operating Frequency**: 240MHz (CM7 Core)
+- **Operating Voltage**: 3.3V
 
-## 项目结构
+## Project Structure
 
 ```
 AutoDOS_Integrated/
-├── CM7/                    # Cortex-M7核心代码
-│   ├── Inc/               # 头文件
+├── CM7/                    # Cortex-M7 Core Code
+│   ├── Inc/               # Header Files
 │   │   ├── main.h
-│   │   ├── uss_attack.h      # 超声波攻击模块
-│   │   ├── mmwave_attack.h   # 毫米波攻击模块
-│   │   ├── dsi3_control.h    # DSI3控制模块
-│   │   └── tpms_cc1101.h     # TPMS攻击模块
-│   └── Src/                  # 源文件
-│       ├── main.c            # 主程序
-│       ├── uss_attack.c      # 超声波攻击实现
-│       ├── mmwave_attack.c   # 毫米波攻击实现
-│       ├── dsi3_control.c    # DSI3控制实现
-│       └── tpms_cc1101.c     # TPMS攻击实现
-├── CM4/                   # Cortex-M4核心代码（预留）
-├── 硬件接口说明.md        # 硬件接口详细说明
-├── 固件功能和使用说明.md  # 固件功能和使用指南
-└── README.md              # 本文件
+│   │   ├── uss_attack.h      # Ultrasonic Attack Module
+│   │   ├── mmwave_attack.h   # Millimeter-Wave Attack Module
+│   │   ├── dsi3_control.h    # DSI3 Control Module
+│   │   └── tpms_cc1101.h     # TPMS Attack Module
+│   └── Src/                  # Source Files
+│       ├── main.c            # Main Program
+│       ├── uss_attack.c      # Ultrasonic Attack Implementation
+│       ├── mmwave_attack.c   # Millimeter-Wave Attack Implementation
+│       ├── dsi3_control.c    # DSI3 Control Implementation
+│       └── tpms_cc1101.c     # TPMS Attack Implementation
+├── CM4/                   # Cortex-M4 Core Code (Reserved)
+├── Hardware_Interface_Description.md        # Detailed Hardware Interface Description
+├── Firmware_Functionality_and_Usage_Guide.md  # Complete Firmware Functionality and Usage Guide (Includes DSI3 and TPMS)
+└── README.md              # This File
 ```
 
-## 快速开始
+## Quick Start
 
-### 1. 硬件准备
+### 1. Hardware Preparation
 
-参考 `硬件接口说明.md` 进行硬件连接：
-- CAN总线接口（FDCAN1和FDCAN2）
-- 超声波换能器和驱动电路
-- 回波检测电路
-- USB接口
+Refer to `Hardware_Interface_Description.md` for hardware connections:
+- CAN bus interfaces (FDCAN1 and FDCAN2)
+- Ultrasonic transducer and driver circuit
+- Echo detection circuit
+- USB interface
 
-### 2. 软件编译
+### 2. Software Compilation
 
-使用STM32CubeIDE或Keil MDK打开项目：
-1. 配置项目路径和工具链
-2. 编译CM7和CM4核心代码
-3. 下载固件到目标板
+Open the project using STM32CubeIDE or Keil MDK:
+1. Configure project paths and toolchain
+2. Compile CM7 and CM4 core code
+3. Download firmware to the target board
 
-### 3. 使用说明
+### 3. Usage Instructions
 
-参考 `固件功能和使用说明.md` 了解：
-- 功能详解
-- 配置方法
-- 使用示例
-- 通信协议
+Refer to `Firmware_Functionality_and_Usage_Guide.md` for:
+- Detailed functionality
+- Configuration methods
+- Usage examples
+- Communication protocols
 
-## 硬件接口总结
+## Hardware Interface Summary
 
-| 接口类型 | 数量 | 功能 |
+| Interface Type | Quantity | Function |
 |---------|------|------|
-| CAN总线 | 2 | CAN中间人转发 |
-| 超声波PWM | 2 | 48kHz超声波输出 |
-| ADC输入 | 1 | 回波信号检测 |
-| USB | 1 | 上位机通信 |
-| SPI | 2 | SPI6(DSI3), SPI3(CC1101) |
-| SPI CS | 2 | DSI3和CC1101片选 |
-| CC1101 GDO0 | 1 | 数据包检测 |
-| LED指示 | 3 | 状态指示 |
-| GPIO | 2 | 通用IO |
+| CAN Bus | 2 | CAN man-in-the-middle forwarding |
+| Ultrasonic PWM | 2 | 48kHz ultrasonic output |
+| ADC Input | 1 | Echo signal detection |
+| USB | 1 | PC communication |
+| SPI | 2 | SPI6 (DSI3), SPI3 (CC1101) |
+| SPI CS | 2 | DSI3 and CC1101 chip select |
+| CC1101 GDO0 | 1 | Packet detection |
+| LED Indicators | 3 | Status indication |
+| GPIO | 2 | General-purpose I/O |
 
-**总计**: 17个主要硬件接口
+**Total**: 17 main hardware interfaces
 
-## 主要功能模块
+## Main Functional Modules
 
-### CAN中间人模块
-- 双向消息转发
-- 实时消息修改
-- 7个独立篡改规则
+### CAN Man-in-the-Middle Module
+- Bidirectional message forwarding
+- Real-time message modification
+- 7 independent tampering rules
 
-### 超声波攻击模块
-- PWM输出（48kHz）
-- ADC回波检测
-- 干扰和欺骗模式
+### Ultrasonic Attack Module
+- PWM output (48kHz)
+- ADC echo detection
+- Interference and spoofing modes
 
-### 毫米波雷达攻击模块
-- CAN消息识别
-- 数据修改
-- 自动转发
+### Millimeter-Wave Radar Attack Module
+- CAN message identification
+- Data modification
+- Automatic forwarding
 
-## 通信接口
+## Communication Interfaces
 
-- **USB虚拟串口**: 与上位机通信，接收命令和发送数据
-- **SPI接口**: 备用通信接口
+- **USB Virtual COM Port**: Communicates with PC to receive commands and send data
+- **SPI Interface**: Alternate communication interface
 
-## 文档
+## Documentation
 
-- [硬件接口说明.md](硬件接口说明.md) - 详细的硬件接口说明
-- [固件功能和使用说明.md](固件功能和使用说明.md) - 完整的功能和使用指南（包含DSI3和TPMS）
-- [配置说明.md](配置说明.md) - HAL模块和外设配置说明
-- [超声波发送硬件说明.md](超声波发送硬件说明.md) - 超声波发送硬件原理
-- [项目检查报告.md](项目检查报告.md) - 项目结构和代码逻辑检查报告
-- [DSI3和TPMS功能说明.md](DSI3和TPMS功能说明.md) - DSI3和TPMS功能详细说明
+- [hardware-interface.md](hardware-interface.md) - Detailed hardware interface description
+- [firmware-fuction.md](firmware-fuction.md) - Complete firmware functionality and usage guide (includes DSI3 and TPMS)
+- [config.md](config.md) - HAL module and peripheral configuration instructions
+- [uss.md](uss.md) - Ultrasonic transmitter hardware principles
 
-## 安全警告
+## Security Warning
 
-⚠️ **重要**: 本固件仅用于安全研究和测试目的。不得用于非法攻击真实车辆。测试应在受控环境中进行，并遵守当地法律法规。
+⚠️ **IMPORTANT**: This firmware is intended for security research and testing purposes only. It must not be used for illegal attacks on real vehicles. Testing should be conducted in controlled environments and comply with local laws and regulations.
 
-## 版本信息
+## Version Information
 
-- **版本**: 1.0.0
-- **发布日期**: 2023
-- **支持平台**: STM32H745ZITx
+- **Version**: 1.0.0
+- **Release Date**: 2023
+- **Supported Platform**: STM32H745ZITx
 
-## 开发环境
+## Development Environment
 
 - STM32CubeIDE 1.x
 - Keil MDK-ARM 5.x
-- STM32CubeMX（用于配置）
+- STM32CubeMX (for configuration)
 
-## 依赖项
+## Dependencies
 
-- STM32H7 HAL库
-- USB Device库（CDC类）
-- STM32H7 BSP库
+- STM32H7 HAL Library
+- USB Device Library (CDC Class)
+- STM32H7 BSP Library
 
-## 许可证
+## License
 
-本项目基于AutoDOS开源项目，遵循相应的开源许可证。
+This project is based on the AutoDOS open-source project and follows the corresponding open-source license.
 
-## 贡献
+## Contribution
 
-欢迎提交Issue和Pull Request。
+Issues and Pull Requests are welcome.
 
-## 联系方式
+## Contact
 
-如有问题，请参考文档或提交Issue。
+For questions, please refer to the documentation or submit an Issue.
 
 ---
 
-**注意**: 本项目整合了以下原始项目：
-- ST_CAN_0.0: CAN中间人固件
-- uss_attack_program: 超声波攻击程序
+**Note**: This project integrates the following original projects:
+- ST_CAN_0.0: CAN man-in-the-middle firmware
+- uss_attack_program: Ultrasonic attack program
 
-## 新增功能
+## New Features
 
-### DSI3总线控制
-- 支持SPI转DSI3芯片控制
-- 实现DSI3总线嗅探、欺骗和干扰
-- 支持4个传感器通道同步控制
+### DSI3 Bus Control
+- Supports SPI-to-DSI3 chip control
+- Implements DSI3 bus sniffing, spoofing, and interference
+- Supports synchronous control of 4 sensor channels
 
-### TPMS胎压攻击
-- 使用TI CC1101进行433MHz信号模拟
-- 支持多种胎压攻击场景
-- 支持传感器ID配置和信号嗅探
-
+### TPMS Tire Pressure Attack
+- Uses TI CC1101 for 433MHz signal simulation
+- Supports multiple tire pressure attack scenarios
+- Supports sensor ID configuration and signal sniffing

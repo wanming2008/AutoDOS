@@ -1,534 +1,533 @@
-# AutoDOS 固件功能和使用说明文档
+# AutoDOS Firmware Functionality and User Manual
 
-## 1. 固件概述
+## 1. Firmware Overview
 
-AutoDOS固件是一个基于STM32H7双核架构的ADAS安全测试工具固件，集成了以下功能：
+The AutoDOS firmware is an ADAS (Advanced Driver Assistance Systems) security testing tool firmware based on the STM32H7 dual-core architecture, integrating the following functionalities:
 
-1. **CAN中间人功能**: 双向转发和修改CAN消息
-2. **超声波雷达攻击**: 支持干扰和欺骗两种模式
-3. **毫米波雷达攻击**: 通过CAN消息修改实现攻击
-4. **DSI3总线控制**: 通过SPI控制DSI3转换芯片，实现DSI3总线嗅探、欺骗和干扰
-5. **TPMS胎压攻击**: 使用TI CC1101芯片进行433MHz胎压信号模拟
+1. **CAN Man-in-the-Middle Functionality**: Bidirectional forwarding and modification of CAN messages.
+2. **Ultrasonic Radar Attack**: Supports both interference and spoofing modes.
+3. **Millimeter-Wave Radar Attack**: Implements attacks by modifying CAN messages.
+4. **DSI3 Bus Control**: Controls DSI3 conversion chips via SPI to implement DSI3 bus sniffing, spoofing, and interference.
+5. **TPMS (Tire Pressure Monitoring System) Attack**: Uses TI CC1101 chip to simulate 433MHz tire pressure signals.
 
-## 2. 固件架构
+## 2. Firmware Architecture
 
-### 2.1 双核架构
+### 2.1 Dual-Core Architecture
 
-- **CM7核心（主核）**: 
-  - 处理CAN中间人功能
-  - 处理超声波雷达攻击
-  - 处理毫米波雷达攻击
-  - 处理DSI3总线控制
-  - 处理TPMS胎压攻击
-  - USB/SPI通信
-  - 系统主循环
+- **CM7 Core (Main Core)**:
+  - Handles CAN man-in-the-middle functionality.
+  - Handles ultrasonic radar attack.
+  - Handles millimeter-wave radar attack.
+  - Handles DSI3 bus control.
+  - Handles TPMS attack.
+  - USB/SPI communication.
+  - Main system loop.
 
-- **CM4核心（从核）**: 
-  - 预留用于扩展功能
-  - 当前实现简单的LED闪烁
+- **CM4 Core (Secondary Core)**:
+  - Reserved for extended functionalities.
+  - Currently implements simple LED blinking.
 
-### 2.2 模块结构
-
-```
-AutoDOS固件
-├── CAN中间人模块
-│   ├── FDCAN1/FDCAN2初始化
-│   ├── 消息转发
-│   └── 消息篡改（7个slot配置）
-├── 超声波攻击模块
-│   ├── PWM输出（48kHz）
-│   ├── ADC回波检测
-│   ├── 干扰模式
-│   └── 欺骗模式
-├── 毫米波雷达攻击模块
-│   ├── CAN消息识别
-│   └── 消息修改
-├── DSI3控制模块
-│   ├── SPI转DSI3控制
-│   ├── 嗅探模式
-│   ├── 欺骗模式
-│   └── 干扰模式
-├── TPMS攻击模块
-│   ├── CC1101控制
-│   ├── 胎压欺骗
-│   └── 信号嗅探
-└── 通信模块
-    ├── USB虚拟串口
-    └── SPI接口
-```
-
-## 3. 功能详解
-
-### 3.1 CAN中间人功能
-
-#### 功能描述
-- 在FDCAN1和FDCAN2之间双向转发CAN消息
-- 支持实时修改CAN消息的ID和数据
-- 支持7个独立的篡改规则（slot）
-- 支持CAN 2.0和CANFD协议
-
-#### 工作原理
-1. 从FDCAN1接收消息 → 检查篡改规则 → 修改消息 → 转发到FDCAN2
-2. 从FDCAN2接收消息 → 检查篡改规则 → 修改消息 → 转发到FDCAN1
-
-#### 配置方法
-通过USB或SPI发送配置数据包（45字节）：
+### 2.2 Module Structure
 
 ```
-数据包格式：
-[0xFA][0x21][Slot索引][ID掩码(4字节)][数据掩码(8字节)][长度(1字节)]
-[ID目标(4字节)][数据目标(8字节)][ID篡改使能(1字节)][数据篡改使能(1字节)]
-[ID篡改目标(4字节)][长度目标(1字节)][数据篡改目标(8字节)][0x22][0xFB]
+AutoDOS Firmware
+├── CAN Man-in-the-Middle Module
+│   ├── FDCAN1/FDCAN2 Initialization
+│   ├── Message Forwarding
+│   └── Message Tampering (7 slot configurations)
+├── Ultrasonic Attack Module
+│   ├── PWM Output (48kHz)
+│   ├── ADC Echo Detection
+│   ├── Interference Mode
+│   └── Spoofing Mode
+├── Millimeter-Wave Radar Attack Module
+│   ├── CAN Message Identification
+│   └── Message Modification
+├── DSI3 Control Module
+│   ├── SPI-to-DSI3 Control
+│   ├── Sniffing Mode
+│   ├── Spoofing Mode
+│   └── Jamming Mode
+├── TPMS Attack Module
+│   ├── CC1101 Control
+│   ├── Tire Pressure Spoofing
+│   └── Signal Sniffing
+└── Communication Module
+    ├── USB Virtual COM Port
+    └── SPI Interface
 ```
 
-#### 使用示例
+## 3. Functionality Details
+
+### 3.1 CAN Man-in-the-Middle Functionality
+
+#### Functional Description
+- Bidirectionally forwards CAN messages between FDCAN1 and FDCAN2.
+- Supports real-time modification of CAN message IDs and data.
+- Supports 7 independent tampering rules (slots).
+- Supports CAN 2.0 and CAN FD protocols.
+
+#### Working Principle
+1. Receive message from FDCAN1 → Check tampering rules → Modify message → Forward to FDCAN2.
+2. Receive message from FDCAN2 → Check tampering rules → Modify message → Forward to FDCAN1.
+
+#### Configuration Method
+Send configuration data packets (45 bytes) via USB or SPI:
+
+```
+Packet Format:
+[0xFA][0x21][Slot Index][ID Mask (4 bytes)][Data Mask (8 bytes)][Length (1 byte)]
+[ID Target (4 bytes)][Data Target (8 bytes)][ID Tamper Enable (1 byte)][Data Tamper Enable (1 byte)]
+[ID Tamper Target (4 bytes)][Length Target (1 byte)][Data Tamper Target (8 bytes)][0x22][0xFB]
+```
+
+#### Usage Example
 ```c
-// 配置slot 0：修改ID为0x123的消息，将数据改为0xAA
+// Configure slot 0: Modify message with ID 0x123, change data to 0xAA
 uint8_t config[45] = {
-    0xFA, 0x21, 0x00,  // 头部和slot索引
-    // ID掩码: 0xFFFFFFFF (完全匹配)
+    0xFA, 0x21, 0x00,  // Header and slot index
+    // ID Mask: 0xFFFFFFFF (exact match)
     0xFF, 0xFF, 0xFF, 0xFF,
-    // 数据掩码: 0xFFFFFFFFFFFFFFFF (完全匹配)
+    // Data Mask: 0xFFFFFFFFFFFFFFFF (exact match)
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    // 长度: 8字节
+    // Length: 8 bytes
     0x08,
-    // ID目标: 0x123
+    // ID Target: 0x123
     0x23, 0x01, 0x00, 0x00,
-    // 数据目标: 任意
+    // Data Target: Any
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    // ID篡改使能: 否, 数据篡改使能: 是
+    // ID Tamper Enable: No, Data Tamper Enable: Yes
     0x00, 0x01,
-    // ID篡改目标: 0x123 (不变)
+    // ID Tamper Target: 0x123 (unchanged)
     0x23, 0x01, 0x00, 0x00,
-    // 长度目标: 8
+    // Length Target: 8
     0x08,
-    // 数据篡改目标: 0xAA
+    // Data Tamper Target: 0xAA
     0xAA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x22, 0xFB  // 尾部
+    0x22, 0xFB  // Footer
 };
 ```
 
-### 3.2 超声波雷达攻击功能
+### 3.2 Ultrasonic Radar Attack Functionality
 
-#### 功能描述
-- **干扰模式**: 持续输出48kHz超声波信号，干扰超声波雷达正常工作
-- **欺骗模式**: 检测超声波雷达的发射信号，延迟一定时间后发射虚假回波，使雷达检测到虚假距离
+#### Functional Description
+- **Interference Mode**: Continuously outputs 48kHz ultrasonic signals to interfere with normal ultrasonic radar operation.
+- **Spoofing Mode**: Detects the ultrasonic radar's transmission signal, delays for a specific time, and then transmits false echoes, causing the radar to detect a false distance.
 
-#### 工作原理
+#### Working Principle
 
-**干扰模式**:
-1. 启动TIM1的PWM输出
-2. 持续输出48kHz互补PWM信号
-3. 驱动超声波换能器产生干扰信号
+**Interference Mode**:
+1. Start TIM1 PWM output.
+2. Continuously output 48kHz complementary PWM signals.
+3. Drive the ultrasonic transducer to generate interference signals.
 
-**欺骗模式**:
-1. ADC连续采样回波检测信号
-2. 检测到电压越界（触发信号）
-3. 记录触发周期
-4. 延迟一定时间（对应虚假距离）
-5. 发射60个周期的48kHz脉冲
-6. 停止发射，等待下次触发
+**Spoofing Mode**:
+1. ADC continuously samples the echo detection signal.
+2. Detect voltage crossing boundaries (trigger signal).
+3. Record trigger cycles.
+4. Delay for a specific time (corresponding to false distance).
+5. Transmit 60 cycles of 48kHz pulses.
+6. Stop transmission and wait for the next trigger.
 
-#### 参数配置
+#### Parameter Configuration
 
-**干扰模式参数**:
-- 频率: 48kHz（固定）
-- 占空比: 50%
-- 输出方式: 互补PWM
+**Interference Mode Parameters**:
+- Frequency: 48kHz (fixed)
+- Duty Cycle: 50%
+- Output Mode: Complementary PWM
 
-**欺骗模式参数**:
-- 触发阈值: 
-  - 低阈值: 2.2V
-  - 高阈值: 2.8V
-- 延迟距离: 可配置（默认30cm）
-- 脉冲周期数: 60个周期
+**Spoofing Mode Parameters**:
+- Trigger Thresholds:
+  - Low Threshold: 2.2V
+  - High Threshold: 2.8V
+- Delay Distance: Configurable (default 30cm)
+- Pulse Cycle Count: 60 cycles
 
-#### 控制命令
+#### Control Commands
 
-通过USB或SPI发送攻击命令：
+Send attack commands via USB or SPI:
 
 ```
-命令格式：
-[0xFA][0x30][命令][参数1][参数2]...
+Command Format:
+[0xFA][0x30][Command][Parameter1][Parameter2]...
 
-命令列表：
-0x01: 超声波攻击控制
-  参数: 0=关闭, 1=干扰模式, 2=欺骗模式
+Command List:
+0x01: Ultrasonic Attack Control
+  Parameter: 0=Off, 1=Interference Mode, 2=Spoofing Mode
 
-0x03: 设置欺骗延迟距离
-  参数: [高字节][低字节] (距离，单位：厘米)
+0x03: Set Spoofing Delay Distance
+  Parameter: [High Byte][Low Byte] (distance, unit: cm)
 ```
 
-#### 使用示例
+#### Usage Example
 ```c
-// 启动干扰模式
+// Start interference mode
 uint8_t cmd_jamming[] = {0xFA, 0x30, 0x01, 0x01};
 
-// 启动欺骗模式
+// Start spoofing mode
 uint8_t cmd_spoof[] = {0xFA, 0x30, 0x01, 0x02};
 
-// 设置欺骗延迟为50cm
+// Set spoofing delay to 50cm
 uint8_t cmd_delay[] = {0xFA, 0x30, 0x03, 0x00, 0x32};  // 0x0032 = 50
 
-// 停止攻击
+// Stop attack
 uint8_t cmd_stop[] = {0xFA, 0x30, 0x01, 0x00};
 ```
 
-### 3.3 毫米波雷达攻击功能
+### 3.3 Millimeter-Wave Radar Attack Functionality
 
-#### 功能描述
-- 识别毫米波雷达的CAN消息
-- 修改距离、目标数量等关键数据
-- 通过CAN中间人功能转发修改后的消息
+#### Functional Description
+- Identifies millimeter-wave radar CAN messages.
+- Modifies key data such as distance and target count.
+- Forwards modified messages via the CAN man-in-the-middle functionality.
 
-#### 工作原理
-1. 在CAN消息篡改函数中检查消息ID
-2. 如果是毫米波雷达相关消息，进行数据修改
-3. 修改后的消息通过CAN中间人转发
+#### Working Principle
+1. Check message ID in the CAN message tampering function.
+2. If it's a millimeter-wave radar-related message, perform data modification.
+3. Forward the modified message via CAN man-in-the-middle.
 
-#### 配置方法
+#### Configuration Method
 
-通过攻击命令配置：
+Configure via attack commands:
 
 ```
-命令格式：
-[0xFA][0x30][0x02][使能][距离高][距离低][目标数量]
+Command Format:
+[0xFA][0x30][0x02][Enable][Distance High][Distance Low][Target Count]
 
-使能: 0=关闭, 1=开启
-距离: 16位，单位：厘米
-目标数量: 8位
+Enable: 0=Off, 1=On
+Distance: 16-bit, unit: cm
+Target Count: 8-bit
 ```
 
-#### 使用示例
+#### Usage Example
 ```c
-// 启用毫米波雷达攻击，设置虚假距离为100cm，虚假目标数量为2
+// Enable millimeter-wave radar attack, set false distance to 100cm, false target count to 2
 uint8_t cmd_mmwave[] = {
-    0xFA, 0x30, 0x02,  // 命令头
-    0x01,              // 使能
-    0x00, 0x64,        // 距离: 100cm
-    0x02               // 目标数量: 2
+    0xFA, 0x30, 0x02,  // Command header
+    0x01,              // Enable
+    0x00, 0x64,        // Distance: 100cm
+    0x02               // Target Count: 2
 };
 ```
 
-### 3.4 DSI3总线控制功能
+### 3.4 DSI3 Bus Control Functionality
 
-#### 功能描述
-DSI3（Distributed System Interface 3）是用于超声波传感器的串行通信协议。本固件通过SPI控制DSI3转换芯片，实现对DSI3总线的嗅探、欺骗和干扰功能。
+#### Functional Description
+DSI3 (Distributed System Interface 3) is a serial communication protocol used for ultrasonic sensors. This firmware controls DSI3 conversion chips via SPI to implement sniffing, spoofing, and interference functionalities on the DSI3 bus.
 
-#### 工作原理
-- **嗅探模式**: 监听DSI3总线上的通信，捕获传感器数据包，分析协议和周期
-- **欺骗模式**: 向DSI3总线注入虚假距离数据，可以设置任意距离值
-- **干扰模式**: 持续发送干扰信号，阻止正常DSI3通信，使传感器失效
+#### Working Principle
+- **Sniffing Mode**: Monitors communication on the DSI3 bus, captures sensor data packets, and analyzes protocols and cycles.
+- **Spoofing Mode**: Injects false distance data into the DSI3 bus, allowing arbitrary distance values to be set.
+- **Interference Mode**: Continuously transmits interference signals, preventing normal DSI3 communication and disabling sensors.
 
-#### 硬件连接
-- **SPI接口**: 使用SPI6
-  - **SCK/MISO/MOSI**: 使用现有SPI6配置
-  - **CS**: 软件控制（建议PB3或PB4）
-- **DSI3转换芯片**: 需要SPI转DSI3的专用芯片，支持最多4个DSI3传感器通道
+#### Hardware Connections
+- **SPI Interface**: Uses SPI6
+  - **SCK/MISO/MOSI**: Uses existing SPI6 configuration.
+  - **CS**: Software-controlled (suggested PB3 or PB4).
+- **DSI3 Conversion Chip**: Requires a dedicated SPI-to-DSI3 chip supporting up to 4 DSI3 sensor channels.
 
-#### 控制命令
-通过USB或SPI发送命令：
+#### Control Commands
+Send commands via USB or SPI:
 
 ```
-命令格式：
-[0xFA][0x30][0x04][命令][传感器ID][参数...]
+Command Format:
+[0xFA][0x30][0x04][Command][Sensor ID][Parameters...]
 
-命令列表：
-0x01: 启动嗅探模式
-  参数: 传感器ID (0-3)
+Command List:
+0x01: Start Sniffing Mode
+  Parameter: Sensor ID (0-3)
 
-0x02: 欺骗距离
-  参数: 传感器ID, 距离高字节, 距离低字节
+0x02: Spoof Distance
+  Parameter: Sensor ID, Distance High Byte, Distance Low Byte
 
-0x03: 启动干扰
-  参数: 传感器ID
+0x03: Start Interference
+  Parameter: Sensor ID
 
-0x00: 停止/恢复正常模式
-  参数: 传感器ID
+0x00: Stop/Restore Normal Mode
+  Parameter: Sensor ID
 ```
 
-#### 使用示例
+#### Usage Example
 ```c
-// 启动传感器0的嗅探模式
+// Start sniffing mode for sensor 0
 uint8_t cmd_sniff[] = {0xFA, 0x30, 0x04, 0x01, 0x00};
 
-// 欺骗传感器1的距离为50cm
+// Spoof distance of sensor 1 to 50cm
 uint8_t cmd_spoof[] = {0xFA, 0x30, 0x04, 0x02, 0x01, 0x00, 0x32};  // 0x0032 = 50
 
-// 启动传感器2的干扰
+// Start interference for sensor 2
 uint8_t cmd_jam[] = {0xFA, 0x30, 0x04, 0x03, 0x02};
 
-// 停止传感器0
+// Stop sensor 0
 uint8_t cmd_stop[] = {0xFA, 0x30, 0x04, 0x00, 0x00};
 ```
 
-### 3.5 TPMS胎压监测系统攻击功能
+### 3.5 TPMS Tire Pressure Attack Functionality
 
-#### 功能描述
-使用TI CC1101芯片进行433MHz射频信号模拟，实现对TPMS（胎压监测系统）的攻击。可以模拟各种胎压异常情况，包括低胎压、高胎压和爆胎。
+#### Functional Description
+Uses the TI CC1101 chip to simulate 433MHz RF signals for attacking TPMS (Tire Pressure Monitoring System). Can simulate various tire pressure anomalies, including low pressure, high pressure, and tire bursts.
 
-#### 工作原理
-1. 配置CC1101为433.92MHz工作频率
-2. 设置TPMS传感器ID（根据目标车辆配置）
-3. 编码TPMS数据包（包含胎压、温度等信息）
-4. 通过CC1101发送433MHz射频信号
-5. 车辆TPMS接收器接收信号并触发警告
+#### Working Principle
+1. Configure CC1101 to operate at 433.92MHz.
+2. Set TPMS sensor ID (configured based on the target vehicle).
+3. Encode TPMS data packets (including tire pressure, temperature, etc.).
+4. Transmit 433MHz RF signals via CC1101.
+5. The vehicle's TPMS receiver receives the signal and triggers warnings.
 
-#### 硬件连接
-- **SPI接口**: 使用SPI3
+#### Hardware Connections
+- **SPI Interface**: Uses SPI3
   - **SCK**: PC10
   - **MISO**: PC11
   - **MOSI**: PC12
-  - **CS**: 软件控制（建议PB5）
-- **CC1101芯片**:
-  - **GDO0**: 数据包检测引脚（建议PB6或PB7）
-  - **晶振**: 26MHz
-- **天线**: 433MHz匹配天线
+  - **CS**: Software-controlled (suggested PB5)
+- **CC1101 Chip**:
+  - **GDO0**: Packet detection pin (suggested PB6 or PB7)
+  - **Crystal**: 26MHz
+- **Antenna**: 433MHz matched antenna
 
-#### 功能特性
-- **胎压欺骗**: 模拟任意胎压值（0-1000kPa），可以设置温度值
-- **攻击场景**:
-  - 低胎压警告: 模拟胎压过低（如150kPa）
-  - 高胎压警告: 模拟胎压过高（如350kPa）
-  - 爆胎模拟: 模拟胎压为0，触发紧急警告
-- **嗅探功能**: 监听433MHz频段的TPMS信号，捕获传感器ID和胎压数据
+#### Functional Features
+- **Tire Pressure Spoofing**: Simulates arbitrary tire pressure values (0-1000kPa), can set temperature values.
+- **Attack Scenarios**:
+  - Low tire pressure warning: Simulates abnormally low pressure (e.g., 150kPa).
+  - High tire pressure warning: Simulates abnormally high pressure (e.g., 350kPa).
+  - Tire burst simulation: Simulates zero pressure, triggering emergency warnings.
+- **Sniffing Function**: Listens to TPMS signals in the 433MHz band, captures sensor IDs and pressure data.
 
-#### 传感器ID配置
-根据AutoDOS文档，许多车型的TPMS传感器ID是固定的。例如：
-- **BMW X3左前轮**: 所有车辆的传感器ID相同
-- 需要根据目标车辆配置正确的传感器ID
+#### Sensor ID Configuration
+According to AutoDOS documentation, TPMS sensor IDs for many vehicle models are fixed. For example:
+- **BMW X3 Front Left Tire**: All vehicles share the same sensor ID.
+- Requires configuring the correct sensor ID based on the target vehicle.
 
-#### 控制命令
-通过USB或SPI发送命令：
+#### Control Commands
+Send commands via USB or SPI:
 
 ```
-命令格式：
-[0xFA][0x30][0x05][命令][轮胎位置][参数...]
+Command Format:
+[0xFA][0x30][0x05][Command][Tire Position][Parameters...]
 
-轮胎位置：
-0x00: 左前轮 (FL)
-0x01: 右前轮 (FR)
-0x02: 左后轮 (RL)
-0x03: 右后轮 (RR)
+Tire Positions:
+0x00: Front Left (FL)
+0x01: Front Right (FR)
+0x02: Rear Left (RL)
+0x03: Rear Right (RR)
 
-命令列表：
-0x01: 设置传感器ID
-  参数: 传感器ID (4字节，大端序)
+Command List:
+0x01: Set Sensor ID
+  Parameter: Sensor ID (4 bytes, big-endian)
 
-0x02: 欺骗胎压
-  参数: 胎压高字节, 胎压低字节, 温度
+0x02: Spoof Tire Pressure
+  Parameter: Pressure High Byte, Pressure Low Byte, Temperature
 
-0x03: 低胎压警告
-  参数: 无
+0x03: Low Tire Pressure Warning
+  Parameter: None
 
-0x04: 高胎压警告
-  参数: 无
+0x04: High Tire Pressure Warning
+  Parameter: None
 
-0x05: 爆胎模拟
-  参数: 无
+0x05: Tire Burst Simulation
+  Parameter: None
 
-0x06: 启动嗅探模式
-  参数: 无
+0x06: Start Sniffing Mode
+  Parameter: None
 ```
 
-#### 使用示例
+#### Usage Example
 ```c
-// 设置左前轮传感器ID（BMW X3示例）
+// Set front left tire sensor ID (BMW X3 example)
 uint8_t cmd_set_id[] = {
-    0xFA, 0x30, 0x05, 0x01, 0x00,  // 命令和位置
-    0x12, 0x34, 0x56, 0x78  // 传感器ID（需要根据实际车辆配置）
+    0xFA, 0x30, 0x05, 0x01, 0x00,  // Command and position
+    0x12, 0x34, 0x56, 0x78  // Sensor ID (needs to be configured based on the actual vehicle)
 };
 
-// 欺骗左前轮胎压为150kPa，温度25°C
+// Spoof front left tire pressure to 150kPa, temperature 25°C
 uint8_t cmd_spoof[] = {
-    0xFA, 0x30, 0x05, 0x02, 0x00,  // 命令和位置
+    0xFA, 0x30, 0x05, 0x02, 0x00,  // Command and position
     0x00, 0x96,  // 150kPa = 0x0096
     0x19  // 25°C
 };
 
-// 模拟左前轮低胎压警告
+// Simulate low tire pressure warning for front left tire
 uint8_t cmd_low[] = {0xFA, 0x30, 0x05, 0x03, 0x00};
 
-// 模拟左前轮爆胎
+// Simulate tire burst for front left tire
 uint8_t cmd_burst[] = {0xFA, 0x30, 0x05, 0x05, 0x00};
 
-// 启动嗅探模式
+// Start sniffing mode
 uint8_t cmd_sniff[] = {0xFA, 0x30, 0x05, 0x06, 0x00};
 ```
 
-## 4. 通信协议
+## 4. Communication Protocols
 
-### 4.1 USB虚拟串口
+### 4.1 USB Virtual COM Port
 
-- **波特率**: 不适用（USB虚拟串口）
-- **数据格式**: 8位数据，无校验，1停止位
-- **用途**: 与上位机通信
+- **Baud Rate**: N/A (USB virtual COM port)
+- **Data Format**: 8 data bits, no parity, 1 stop bit
+- **Purpose**: Communication with PC
 
-### 4.2 数据包格式
+### 4.2 Data Packet Formats
 
-#### CAN数据包输出格式
+#### CAN Data Packet Output Format
 ```
-[0xFA][0x51][0x00][时间戳(4字节)][CAN ID(4字节)][数据长度(1字节)]
-[数据(可变长度)][0x52][0xFB]
-```
-
-#### 命令数据包格式
-```
-[长度高字节][长度低字节][0x00][0x00][数据...]
+[0xFA][0x51][0x00][Timestamp (4 bytes)][CAN ID (4 bytes)][Data Length (1 byte)]
+[Data (variable length)][0x52][0xFB]
 ```
 
-## 5. 使用流程
-
-### 5.1 基本使用流程
-
-1. **硬件连接**
-   - 连接CAN总线到FDCAN1和FDCAN2
-   - 连接超声波换能器到TIM1输出
-   - 连接回波检测电路到ADC1
-   - 连接USB到PC
-
-2. **固件烧录**
-   - 使用ST-Link或J-Link下载固件
-   - 确保CM7和CM4核心都正确烧录
-
-3. **系统启动**
-   - 上电后LED2开始闪烁，表示系统运行
-   - USB连接后LED1点亮
-
-4. **配置攻击参数**
-   - 通过USB发送配置命令
-   - 配置CAN篡改规则
-   - 配置攻击模式
-
-5. **启动攻击**
-   - 发送攻击启动命令
-   - 观察攻击效果
-
-### 5.2 典型应用场景
-
-#### 场景1: 超声波雷达干扰
+#### Command Data Packet Format
 ```
-1. 发送命令启动干扰模式
-2. 超声波换能器持续输出48kHz信号
-3. 干扰车辆超声波雷达正常工作
+[Length High Byte][Length Low Byte][0x00][0x00][Data...]
 ```
 
-#### 场景2: 超声波雷达欺骗
-```
-1. 配置欺骗延迟距离（如30cm）
-2. 发送命令启动欺骗模式
-3. 系统检测雷达发射信号
-4. 延迟后发射虚假回波
-5. 雷达检测到虚假距离
-```
+## 5. Usage Workflow
 
-#### 场景3: 毫米波雷达攻击
-```
-1. 配置CAN篡改规则，识别毫米波雷达消息
-2. 启用毫米波雷达攻击，设置虚假距离和目标
-3. CAN中间人自动修改并转发消息
-4. 车辆ECU接收到虚假的雷达数据
-```
+### 5.1 Basic Usage Workflow
 
-#### 场景4: DSI3总线攻击
-```
-1. 启动DSI3嗅探模式，分析车辆DSI3协议
-2. 启动DSI3欺骗模式，设置虚假距离
-3. 车辆超声波雷达接收到虚假数据
-4. 影响自动泊车等功能的判断
-```
+1. **Hardware Connection**
+   - Connect CAN buses to FDCAN1 and FDCAN2.
+   - Connect ultrasonic transducer to TIM1 output.
+   - Connect echo detection circuit to ADC1.
+   - Connect USB to PC.
 
-#### 场景5: TPMS胎压攻击
-```
-1. 配置目标车辆的TPMS传感器ID
-2. 发送低胎压或爆胎信号
-3. 车辆ECU接收到异常信号
-4. 立即退出自动驾驶模式
-5. 触发紧急停车
-```
+2. **Firmware Programming**
+   - Use ST-Link or J-Link to download the firmware.
+   - Ensure both CM7 and CM4 cores are correctly programmed.
 
-#### 场景6: 组合攻击
+3. **System Startup**
+   - After power-on, LED2 should blink, indicating system operation.
+   - LED1 lights up when USB is connected.
+
+4. **Configure Attack Parameters**
+   - Send configuration commands via USB.
+   - Configure CAN tampering rules.
+   - Configure attack modes.
+
+5. **Start Attack**
+   - Send attack start commands.
+   - Observe attack effects.
+
+### 5.2 Typical Application Scenarios
+
+#### Scenario 1: Ultrasonic Radar Interference
 ```
-1. 同时启用超声波干扰、毫米波雷达攻击、DSI3干扰和TPMS攻击
-2. 实现多传感器协同攻击
-3. 测试ADAS系统的多传感器融合能力
+1. Send command to start interference mode.
+2. Ultrasonic transducer continuously outputs 48kHz signals.
+3. Interfere with the vehicle's ultrasonic radar normal operation.
 ```
 
-## 6. 调试和故障排除
+#### Scenario 2: Ultrasonic Radar Spoofing
+```
+1. Configure spoofing delay distance (e.g., 30cm).
+2. Send command to start spoofing mode.
+3. System detects radar transmission signals.
+4. Transmits false echoes after delay.
+5. Radar detects false distance.
+```
 
-### 6.1 LED状态指示
+#### Scenario 3: Millimeter-Wave Radar Attack
+```
+1. Configure CAN tampering rules to identify millimeter-wave radar messages.
+2. Enable millimeter-wave radar attack, set false distance and targets.
+3. CAN man-in-the-middle automatically modifies and forwards messages.
+4. Vehicle ECU receives false radar data.
+```
 
-- **LED1**: USB连接状态
-- **LED2**: 系统运行状态（正常应闪烁）
+#### Scenario 4: DSI3 Bus Attack
+```
+1. Start DSI3 sniffing mode to analyze vehicle DSI3 protocols.
+2. Start DSI3 spoofing mode to set false distance values.
+3. Vehicle ultrasonic radar receives false data.
+4. Affect judgments for functions like automatic parking.
+```
 
-### 6.2 常见问题
+#### Scenario 5: TPMS Tire Pressure Attack
+```
+1. Configure TPMS sensor ID for the target vehicle.
+2. Send low tire pressure or tire burst signals.
+3. Vehicle ECU receives abnormal signals.
+4. Immediately exit autonomous driving mode.
+5. Trigger emergency stopping.
+```
 
-1. **CAN消息无法转发**
-   - 检查CAN总线连接
-   - 检查终端电阻
-   - 检查波特率配置
+#### Scenario 6: Combined Attack
+```
+1. Simultaneously enable ultrasonic interference, millimeter-wave radar attack, DSI3 interference, and TPMS attack.
+2. Implement multi-sensor coordinated attacks.
+3. Test ADAS system's multi-sensor fusion capabilities.
+```
 
-2. **超声波无输出**
-   - 检查TIM1配置
-   - 检查PWM输出引脚连接
-   - 检查驱动电路
+## 6. Debugging and Troubleshooting
 
-3. **回波检测不工作**
-   - 检查ADC配置
-   - 检查回波检测电路
-   - 调整检测阈值
+### 6.1 LED Status Indicators
 
-4. **USB通信失败**
-   - 检查USB连接
-   - 检查驱动安装
-   - 检查波特率设置
+- **LED1**: USB connection status.
+- **LED2**: System operation status (should blink when normal).
 
-5. **DSI3无法工作**
-   - 检查SPI6连接
-   - 检查DSI3转换芯片
-   - 检查CS引脚配置
-   - 验证SPI通信时序
+### 6.2 Common Issues
 
-6. **TPMS无法发送**
-   - 检查SPI3连接
-   - 检查CC1101芯片
-   - 检查天线连接
-   - 验证433MHz频率配置
-   - 确认传感器ID配置正确
+1. **CAN Messages Not Forwarding**
+   - Check CAN bus connections.
+   - Check termination resistors.
+   - Check baud rate configuration.
 
-## 7. 安全注意事项
+2. **No Ultrasonic Output**
+   - Check TIM1 configuration.
+   - Check PWM output pin connections.
+   - Check driver circuit.
 
-⚠️ **重要警告**:
+3. **Echo Detection Not Working**
+   - Check ADC configuration.
+   - Check echo detection circuit.
+   - Adjust detection thresholds.
 
-1. 本固件仅用于安全研究和测试目的
-2. 不得用于非法攻击真实车辆
-3. 测试应在受控环境中进行
-4. 遵守当地法律法规
-5. 测试前确保车辆处于安全状态
+4. **USB Communication Failure**
+   - Check USB connection.
+   - Check driver installation.
+   - Check baud rate settings.
 
-## 8. 固件版本信息
+5. **DSI3 Not Working**
+   - Check SPI6 connections.
+   - Check DSI3 conversion chip.
+   - Check CS pin configuration.
+   - Verify SPI communication timing.
 
-- **版本**: 1.0.0
-- **发布日期**: 2023
-- **支持平台**: STM32H745ZITx
-- **开发环境**: STM32CubeIDE / Keil MDK
+6. **TPMS Transmission Failure**
+   - Check SPI3 connections.
+   - Check CC1101 chip.
+   - Check antenna connection.
+   - Verify 433MHz frequency configuration.
+   - Confirm sensor ID is correctly configured.
 
-## 9. 技术支持
+## 7. Security Precautions
 
-如有问题，请参考：
-- 硬件接口说明文档
-- STM32H7参考手册
-- CAN协议规范
-- 超声波雷达技术文档
+⚠️ **IMPORTANT WARNINGS**:
 
-## 10. 更新日志
+1. This firmware is intended for security research and testing purposes only.
+2. Must not be used for illegal attacks on real vehicles.
+3. Testing should be conducted in controlled environments.
+4. Comply with local laws and regulations.
+5. Ensure the vehicle is in a safe state before testing.
+
+## 8. Firmware Version Information
+
+- **Version**: 1.0.0
+- **Release Date**: 2023
+- **Supported Platform**: STM32H745ZITx
+- **Development Environment**: STM32CubeIDE / Keil MDK
+
+## 9. Technical Support
+
+For issues, please refer to:
+- Hardware Interface Documentation
+- STM32H7 Reference Manual
+- CAN Protocol Specifications
+- Ultrasonic Radar Technical Documentation
+
+## 10. Update Log
 
 ### v1.0.0 (2023)
-- 初始版本
-- 实现CAN中间人功能
-- 实现超声波雷达攻击（干扰和欺骗）
-- 实现毫米波雷达攻击
-- 实现DSI3总线控制（嗅探、欺骗、干扰）
-- 实现TPMS胎压攻击（使用CC1101）
-- 支持USB和SPI通信
-
+- Initial version.
+- Implemented CAN man-in-the-middle functionality.
+- Implemented ultrasonic radar attack (interference and spoofing).
+- Implemented millimeter-wave radar attack.
+- Implemented DSI3 bus control (sniffing, spoofing, interference).
+- Implemented TPMS tire pressure attack (using CC1101).
+- Supports USB and SPI communication.

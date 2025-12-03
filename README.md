@@ -31,7 +31,7 @@ Supports 433MHz and 315Khz frequency.
 The block diagram is as follows. It is currently the schematic of version V1. The V2 version will be uploaded in 2 days. The V2 version will integrate all the external modules in the image onto a single printed circuit board and place them inside the metal CNC housing of AutoDo
 ![fffd554b858e57654d01dfdc1a4bea44](https://github.com/user-attachments/assets/61aabead-8c54-4c5f-8a3d-3c78a23dd4d9)
 
-THE green part mean already supported  The red pard mean will suppoet in the future release V3
+The green part mean already supported  The red pard mean will suppoet in the future release V3
 ## 3. AutoDoS firmware file
 Firmware for ADAS (Advanced Driver Assistance System) security testing tool based on the STM32H7 dual-core architecture. This project integrates CAN man-in-the-middle, ultrasonic radar attack, millimeter-wave
 radar attack, TPMS tire pressure monitoring system attack, and more. Features

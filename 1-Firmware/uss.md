@@ -1,170 +1,169 @@
-# 超声波发送硬件说明
+# Ultrasonic Transmitter Hardware Description
 
-## 1. 发送PWM信号的硬件
+## 1. Hardware for Transmitting PWM Signals
 
-### STM32定时器（TIM1）
-- **硬件**: STM32H7的TIM1定时器
-- **功能**: 产生48kHz的PWM信号
-- **输出引脚**:
-  - **TIM1_CH1**: PA8（正极输出）
-  - **TIM1_CH2**: PA9（负极输出，互补）
-- **输出方式**: 互补PWM（推挽输出）
-- **频率**: 48kHz
-- **占空比**: 50%
+### STM32 Timer (TIM1)
+- **Hardware**: STM32H7's TIM1 timer
+- **Function**: Generates 48kHz PWM signals
+- **Output Pins**:
+  - **TIM1_CH1**: PA8 (positive output)
+  - **TIM1_CH2**: PA9 (negative output, complementary)
+- **Output Mode**: Complementary PWM (push-pull output)
+- **Frequency**: 48 kHz
+- **Duty Cycle**: 50%
 
-### 工作原理
+### Working Principle
 ```
-STM32 TIM1定时器 
-    ↓ (产生48kHz PWM信号)
+STM32 TIM1 Timer
+    ↓ (Generates 48kHz PWM signal)
 PA8 (TIM1_CH1) ──┐
-                 ├──→ 驱动电路 ──→ 超声波换能器 ──→ 发射48kHz超声波
-PA9 (TIM1_CH2) ──┘ (互补PWM，推挽输出)
+                 ├──→ Driver Circuit ──→ Ultrasonic Transducer ──→ Transmits 48kHz ultrasonic waves
+PA9 (TIM1_CH2) ──┘ (Complementary PWM, push-pull output)
 ```
 
-## 2. 超声波换能器（Transducer）
+## 2. Ultrasonic Transducer
 
-### 什么是超声波换能器？
-- **定义**: 将电信号转换为超声波信号的器件
-- **类型**: 压电陶瓷超声波换能器
-- **工作频率**: 40-48kHz（本系统使用48kHz）
-- **功能**: 
-  - 接收PWM电信号
-  - 振动产生超声波
-  - 发射到空气中
+### What is an Ultrasonic Transducer?
+- **Definition**: A device that converts electrical signals into ultrasonic signals
+- **Type**: Piezoelectric ceramic ultrasonic transducer
+- **Operating Frequency**: 40-48 kHz (this system uses 48 kHz)
+- **Functions**:
+  - Receives PWM electrical signals
+  - Vibrates to generate ultrasonic waves
+  - Transmits ultrasonic waves into the air
 
-### 换能器连接
+### Transducer Connections
 ```
-TIM1_CH1 (PA8) ──→ 换能器正极
-TIM1_CH2 (PA9) ──→ 换能器负极
+TIM1_CH1 (PA8) ──→ Transducer positive terminal
+TIM1_CH2 (PA9) ──→ Transducer negative terminal
 ```
 
-## 3. 驱动电路
+## 3. Driver Circuit
 
-### 为什么需要驱动电路？
-STM32的GPIO输出电流有限（通常<25mA），而超声波换能器需要较大的驱动功率，因此需要驱动电路。
+### Why is a Driver Circuit Needed?
+STM32's GPIO output current is limited (typically <25mA), while ultrasonic transducers require higher driving power. Therefore, a driver circuit is necessary.
 
-### 驱动电路方案
+### Driver Circuit Solutions
 
-#### 方案1: H桥驱动（推荐）
+#### Option 1: H-Bridge Driver (Recommended)
 ```
-TIM1_CH1 ──→ H桥驱动芯片（如DRV8833）──→ 换能器
-TIM1_CH2 ──→ H桥驱动芯片
+TIM1_CH1 ──→ H-Bridge Driver Chip (e.g., DRV8833) ──→ Transducer
+TIM1_CH2 ──→ H-Bridge Driver Chip
 ```
-- **优点**: 功率大，效率高，支持双向驱动
-- **适用**: 大功率超声波换能器
+- **Advantages**: High power, high efficiency, supports bidirectional driving
+- **Applicability**: High-power ultrasonic transducers
 
-#### 方案2: 推挽放大器
+#### Option 2: Push-Pull Amplifier
 ```
-TIM1_CH1 ──→ 推挽放大器 ──→ 换能器
-TIM1_CH2 ──→ 推挽放大器
+TIM1_CH1 ──→ Push-Pull Amplifier ──→ Transducer
+TIM1_CH2 ──→ Push-Pull Amplifier
 ```
-- **优点**: 电路简单
-- **适用**: 中小功率换能器
+- **Advantages**: Simple circuit
+- **Applicability**: Medium/low-power transducers
 
-#### 方案3: 专用超声波驱动芯片
-- 使用专用的超声波驱动IC
-- 集成度高，性能好
+#### Option 3: Dedicated Ultrasonic Driver Chip
+- Use specialized ultrasonic driver ICs
+- High integration, good performance
 
-## 4. 完整信号链路
+## 4. Complete Signal Chain
 
 ```
-STM32 TIM1定时器
+STM32 TIM1 Timer
     ↓
-产生48kHz PWM信号（互补输出）
+Generates 48kHz PWM signal (complementary output)
     ↓
 PA8 (TIM1_CH1) ──┐
-                 ├──→ 驱动电路（H桥/推挽放大器）
+                 ├──→ Driver Circuit (H-bridge/Push-pull amplifier)
 PA9 (TIM1_CH2) ──┘
     ↓
-驱动电路放大PWM信号
+Driver circuit amplifies PWM signal
     ↓
-超声波换能器（压电陶瓷）
+Ultrasonic Transducer (piezoelectric ceramic)
     ↓
-换能器振动产生48kHz超声波
+Transducer vibrates to generate 48kHz ultrasonic waves
     ↓
-超声波在空气中传播
+Ultrasonic waves propagate through air
 ```
 
-## 5. 两种工作模式
+## 5. Two Operating Modes
 
-### 模式1: 干扰模式（Jamming）
+### Mode 1: Interference Mode (Jamming)
 ```
-TIM1持续输出48kHz PWM
+TIM1 continuously outputs 48kHz PWM
     ↓
-驱动电路持续驱动
+Driver circuit continuously drives
     ↓
-换能器持续发射48kHz超声波
+Transducer continuously transmits 48kHz ultrasonic waves
     ↓
-干扰车辆超声波雷达的正常工作
+Interferes with normal operation of vehicle's ultrasonic radar
 ```
 
-### 模式2: 欺骗模式（Spoof）
+### Mode 2: Spoofing Mode (Spoof)
 ```
-1. ADC检测车辆雷达发射的超声波（通过回波检测电路）
-2. 检测到触发信号后
-3. 延迟一定时间（对应虚假距离）
-4. TIM1输出60个周期的48kHz PWM脉冲
-5. 驱动电路驱动换能器
-6. 换能器发射虚假回波
-7. 车辆雷达接收到虚假回波，误判距离
+1. ADC detects vehicle radar's transmitted ultrasonic waves (via echo detection circuit)
+2. After detecting trigger signal
+3. Delays for a specific time (corresponding to false distance)
+4. TIM1 outputs 60 cycles of 48kHz PWM pulses
+5. Driver circuit drives the transducer
+6. Transducer transmits false echoes
+7. Vehicle radar receives false echoes, misjudging distance
 ```
 
-## 6. 硬件组件总结
+## 6. Hardware Components Summary
 
-| 组件 | 功能 | 位置 |
-|------|------|------|
-| **STM32 TIM1** | 产生48kHz PWM信号 | STM32H7芯片内部 |
-| **PA8/PA9** | PWM输出引脚 | STM32 GPIO |
-| **驱动电路** | 放大PWM信号功率 | 外部电路板 |
-| **超声波换能器** | 将电信号转换为超声波 | 外部器件 |
+| Component | Function | Location |
+|---|---|---|
+| **STM32 TIM1** | Generates 48kHz PWM signal | Inside STM32H7 chip |
+| **PA8/PA9** | PWM output pins | STM32 GPIO |
+| **Driver Circuit** | Amplifies PWM signal power | External circuit board |
+| **Ultrasonic Transducer** | Converts electrical signals to ultrasonic waves | External device |
 
-## 7. 关键参数
+## 7. Key Parameters
 
-### PWM参数
-- **频率**: 48kHz（与超声波雷达工作频率一致）
-- **占空比**: 50%
-- **输出方式**: 互补PWM（推挽）
-- **电压**: 3.3V（STM32输出）
+### PWM Parameters
+- **Frequency**: 48 kHz (matches ultrasonic radar operating frequency)
+- **Duty Cycle**: 50%
+- **Output Mode**: Complementary PWM (push-pull)
+- **Voltage**: 3.3V (STM32 output)
 
-### 驱动电路参数
-- **输入**: 3.3V PWM信号
-- **输出**: 根据换能器需求（通常5-12V）
-- **功率**: 根据换能器规格（通常几瓦到几十瓦）
+### Driver Circuit Parameters
+- **Input**: 3.3V PWM signal
+- **Output**: According to transducer requirements (typically 5-12V)
+- **Power**: According to transducer specifications (typically a few watts to tens of watts)
 
-### 换能器参数
-- **工作频率**: 48kHz
-- **阻抗**: 通常几百到几千欧姆
-- **功率**: 根据应用需求选择
+### Transducer Parameters
+- **Operating Frequency**: 48 kHz
+- **Impedance**: Typically several hundred to several thousand ohms
+- **Power**: Select according to application requirements
 
-## 8. 注意事项
+## 8. Important Notes
 
-1. **驱动电路必须**: 
-   - 能够提供足够的驱动功率
-   - 支持48kHz频率响应
-   - 具有良好的线性度
+1. **Driver Circuit Must**:
+   - Provide sufficient driving power
+   - Support 48 kHz frequency response
+   - Have good linearity
 
-2. **换能器选择**:
-   - 工作频率必须匹配48kHz
-   - 功率要满足应用需求
-   - 方向性要符合应用场景
+2. **Transducer Selection**:
+   - Operating frequency must match 48 kHz
+   - Power must meet application requirements
+   - Directionality should match application scenario
 
-3. **PCB布局**:
-   - PWM信号线要尽量短
-   - 避免干扰
-   - 驱动电路要靠近换能器
+3. **PCB Layout**:
+   - Keep PWM signal traces as short as possible
+   - Avoid interference
+   - Place driver circuit close to the transducer
 
-4. **电源**:
-   - 驱动电路需要独立电源
-   - 确保电源稳定
-   - 注意功率消耗
+4. **Power Supply**:
+   - Driver circuit requires an independent power supply
+   - Ensure stable power supply
+   - Consider power consumption
 
-## 9. 总结
+## 9. Summary
 
-**发送PWM的是**: STM32的TIM1定时器（硬件定时器）
+**What transmits PWM**: STM32's TIM1 timer (hardware timer)
 
-**发送超声波的是**: 超声波换能器（压电陶瓷器件）
+**What transmits ultrasonic waves**: Ultrasonic transducer (piezoelectric ceramic device)
 
-**中间环节**: 驱动电路（放大PWM信号，驱动换能器）
+**Intermediate stage**: Driver circuit (amplifies PWM signal, drives transducer)
 
-整个系统是：**STM32定时器 → 驱动电路 → 超声波换能器 → 超声波**
-
+The complete system is: **STM32 Timer → Driver Circuit → Ultrasonic Transducer → Ultrasonic Waves**

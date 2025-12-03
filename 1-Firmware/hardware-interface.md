@@ -1,136 +1,136 @@
-# AutoDOS 硬件接口说明文档
+# AutoDOS Hardware Interface Documentation
 
-## 1. 概述
+## 1. Overview
 
-AutoDOS是一个基于STM32H7双核（Cortex-M7和Cortex-M4）的ADAS安全测试工具，集成了CAN中间人、超声波雷达攻击和毫米波雷达攻击功能。
+AutoDOS is an ADAS (Advanced Driver Assistance Systems) security testing tool based on the STM32H7 dual-core (Cortex-M7 and Cortex-M4) platform. It integrates CAN man-in-the-middle, ultrasonic radar attack, and millimeter-wave radar attack functionalities.
 
-## 2. 硬件平台
+## 2. Hardware Platform
 
-- **主控芯片**: STM32H745ZITx（双核：CM7 + CM4）
-- **工作电压**: 3.3V
-- **工作频率**: 240MHz（CM7核心）
+- **Main Controller**: STM32H745ZITx (Dual-core: CM7 + CM4)
+- **Operating Voltage**: 3.3V
+- **Operating Frequency**: 240MHz (CM7 Core)
 
-## 3. 硬件接口列表
+## 3. Hardware Interface List
 
-### 3.1 CAN总线接口
+### 3.1 CAN Bus Interfaces
 
-#### FDCAN1接口
+#### FDCAN1 Interface
 - **RX**: PD0 (FDCAN1_RX)
 - **TX**: PD1 (FDCAN1_TX)
-- **功能**: CAN总线1，用于连接车辆ECU或传感器
-- **协议**: CAN 2.0 / CANFD
-- **波特率**: 500Kbps（可配置）
+- **Function**: CAN Bus 1, used to connect to vehicle ECU or sensors
+- **Protocol**: CAN 2.0 / CAN FD
+- **Baud Rate**: 500 kbps (configurable)
 
-#### FDCAN2接口
+#### FDCAN2 Interface
 - **RX**: PB12 (FDCAN2_RX)
 - **TX**: PB6 (FDCAN2_TX)
-- **功能**: CAN总线2，用于连接车辆ECU或传感器
-- **协议**: CAN 2.0 / CANFD
-- **波特率**: 500Kbps（可配置）
+- **Function**: CAN Bus 2, used to connect to vehicle ECU or sensors
+- **Protocol**: CAN 2.0 / CAN FD
+- **Baud Rate**: 500 kbps (configurable)
 
-**连接说明**: 
-- FDCAN1和FDCAN2作为CAN中间人，可以双向转发和修改CAN消息
-- 典型应用：FDCAN1连接毫米波雷达，FDCAN2连接ECU
+**Connection Notes**:
+- FDCAN1 and FDCAN2 function as CAN man-in-the-middle, capable of bidirectional forwarding and modification of CAN messages
+- Typical application: FDCAN1 connects to a millimeter-wave radar, FDCAN2 connects to an ECU
 
-### 3.2 超声波雷达接口
+### 3.2 Ultrasonic Radar Interface
 
-#### PWM输出接口（超声波发射）
-- **TIM1_CH1**: PA8（超声波发射正极）
-- **TIM1_CH2**: PA9（超声波发射负极，互补输出）
-- **功能**: 输出48kHz PWM信号驱动超声波换能器
-- **频率**: 48kHz
-- **占空比**: 50%
-- **输出方式**: 互补PWM（推挽输出）
+#### PWM Output Interface (Ultrasonic Transmission)
+- **TIM1_CH1**: PA8 (Ultrasonic Transducer Positive)
+- **TIM1_CH2**: PA9 (Ultrasonic Transducer Negative, Complementary Output)
+- **Function**: Outputs 48kHz PWM signal to drive the ultrasonic transducer
+- **Frequency**: 48 kHz
+- **Duty Cycle**: 50%
+- **Output Mode**: Complementary PWM (Push-Pull Output)
 
-#### ADC输入接口（超声波回波检测）
-- **ADC1_IN0**: PA0（回波信号检测）
-- **功能**: 检测超声波回波信号电压
-- **分辨率**: 12位
-- **参考电压**: 3.3V
-- **检测阈值**: 
-  - 低阈值: 2.2V (ADC值: 450)
-  - 高阈值: 2.8V (ADC值: 570)
+#### ADC Input Interface (Ultrasonic Echo Detection)
+- **ADC1_IN0**: PA0 (Echo Signal Detection)
+- **Function**: Detects ultrasonic echo signal voltage
+- **Resolution**: 12-bit
+- **Reference Voltage**: 3.3V
+- **Detection Thresholds**:
+  - Low Threshold: 2.2V (ADC Value: 450)
+  - High Threshold: 2.8V (ADC Value: 570)
 
-**连接说明**:
-- 超声波换能器需要连接到TIM1_CH1和TIM1_CH2
-- 回波检测电路输出连接到ADC1_IN0
-- 建议使用运算放大器进行信号调理
+**Connection Notes**:
+- The ultrasonic transducer must be connected to TIM1_CH1 and TIM1_CH2
+- The echo detection circuit output should be connected to ADC1_IN0
+- It is recommended to use an operational amplifier for signal conditioning
 
-### 3.3 通信接口
+### 3.3 Communication Interfaces
 
-#### USB接口
+#### USB Interface
 - **DM**: PA11 (USB_OTG_FS_DM)
 - **DP**: PA12 (USB_OTG_FS_DP)
-- **功能**: USB虚拟串口（CDC），用于与上位机通信
-- **速度**: Full Speed (12Mbps)
-- **用途**: 
-  - 接收攻击命令
-  - 发送CAN数据包
-  - 配置攻击参数
+- **Function**: USB Virtual COM Port (CDC), used for communication with a PC
+- **Speed**: Full Speed (12 Mbps)
+- **Purpose**:
+  - Receive attack commands
+  - Send CAN data packets
+  - Configure attack parameters
 
-#### SPI接口
+#### SPI Interfaces
 
-##### SPI6接口（用于DSI3和通信）
-- **NSS**: PA4 (SPI6_NSS) 或软件控制
+##### SPI6 Interface (For DSI3 and Communication)
+- **NSS**: PA4 (SPI6_NSS) or software-controlled
 - **SCK**: PA5 (SPI6_SCK)
 - **MISO**: PA6 (SPI6_MISO)
 - **MOSI**: PA7 (SPI6_MOSI)
-- **功能**: SPI主模式，用于DSI3控制和通信
-- **波特率**: 系统时钟/32
-- **用途**: 
-  - DSI3转换芯片控制
-  - 备用通信接口
+- **Function**: SPI Master Mode, used for DSI3 control and communication
+- **Baud Rate**: System Clock / 32
+- **Purpose**:
+  - DSI3 conversion chip control
+  - Alternate communication interface
 
-##### SPI3接口（用于CC1101）
+##### SPI3 Interface (For CC1101)
 - **SCK**: PC10 (SPI3_SCK)
 - **MISO**: PC11 (SPI3_MISO)
 - **MOSI**: PC12 (SPI3_MOSI)
-- **CS**: 软件控制（建议PB5）
-- **功能**: SPI主模式，用于CC1101芯片控制
-- **波特率**: 系统时钟/8
-- **用途**: TPMS CC1101通信
+- **CS**: Software-controlled (suggested PB5)
+- **Function**: SPI Master Mode, used for CC1101 chip control
+- **Baud Rate**: System Clock / 8
+- **Purpose**: TPMS CC1101 communication
 
-##### DSI3接口
-- **CS**: 软件控制（建议PB3或PB4）
-- **功能**: DSI3转换芯片片选
-- **用途**: 控制SPI转DSI3芯片
+##### DSI3 Interface
+- **CS**: Software-controlled (suggested PB3 or PB4)
+- **Function**: DSI3 conversion chip chip select
+- **Purpose**: Controls SPI-to-DSI3 chip
 
-##### CC1101接口
-- **CS**: 软件控制（建议PB5）
-- **GDO0**: 软件控制（建议PB6或PB7）
-- **功能**: CC1101片选和数据包检测
-- **用途**: TPMS信号发送和接收
+##### CC1101 Interface
+- **CS**: Software-controlled (suggested PB5)
+- **GDO0**: Software-controlled (suggested PB6 or PB7)
+- **Function**: CC1101 chip select and packet detection
+- **Purpose**: TPMS signal transmission and reception
 
-### 3.4 状态指示LED
+### 3.4 Status Indicator LEDs
 
 - **LED1**: PB0
-  - 功能: USB连接状态指示
-  - 亮: USB已连接
-  - 灭: USB未连接
+  - Function: USB connection status indicator
+  - On: USB connected
+  - Off: USB not connected
 
 - **LED2**: PE1
-  - 功能: 系统运行状态指示
-  - 闪烁: 系统正常运行（100ms周期）
+  - Function: System operation status indicator
+  - Blinking: System operating normally (100ms period)
 
 - **LED3**: PB14
-  - 功能: 预留
+  - Function: Reserved
 
-### 3.5 其他接口
+### 3.5 Other Interfaces
 
 - **RDY**: PE6
-  - 功能: 就绪信号输入（下拉）
-  - 用途: 外部设备就绪检测
+  - Function: Ready signal input (pull-down)
+  - Purpose: External device ready detection
 
-- **PD8**: 
-  - 功能: 通用输出（CM4核心使用）
+- **PD8**:
+  - Function: General-purpose output (used by CM4 core)
 
-## 4. 电源接口
+## 4. Power Supply Interfaces
 
 - **VDD**: 3.3V
-- **GND**: 地
-- **VBUS**: USB电源（5V，用于USB检测）
+- **GND**: Ground
+- **VBUS**: USB power (5V, used for USB detection)
 
-## 5. 硬件连接示意图
+## 5. Hardware Connection Diagram
 
 ```
                     ┌─────────────────┐
@@ -142,10 +142,10 @@ AutoDOS是一个基于STM32H7双核（Cortex-M7和Cortex-M4）的ADAS安全测�
     CAN2_H ────────┤ PB12(FDCAN2_RX) │
     CAN2_L ────────┤ PB6 (FDCAN2_TX) │
                     │                 │
-  超声波换能器+ ────┤ PA8 (TIM1_CH1)  │
-  超声波换能器- ────┤ PA9 (TIM1_CH2)  │
+ Ultrasonic Tx+ ───┤ PA8 (TIM1_CH1)  │
+ Ultrasonic Tx- ───┤ PA9 (TIM1_CH2)  │
                     │                 │
-   回波检测信号 ────┤ PA0 (ADC1_IN0)  │
+  Echo Detect Sig ─┤ PA0 (ADC1_IN0)  │
                     │                 │
     USB_DM ────────┤ PA11            │
     USB_DP ────────┤ PA12            │
@@ -157,53 +157,52 @@ AutoDOS是一个基于STM32H7双核（Cortex-M7和Cortex-M4）的ADAS安全测�
                     └─────────────────┘
 ```
 
-## 6. 硬件接口总结
+## 6. Hardware Interface Summary
 
-| 接口类型 | 数量 | 引脚 | 功能 |
+| Interface Type | Quantity | Pins | Function |
 |---------|------|------|------|
-| CAN总线 | 2 | PD0/PD1, PB12/PB6 | CAN中间人转发 |
-| 超声波PWM | 2 | PA8, PA9 | 48kHz超声波输出 |
-| ADC输入 | 1 | PA0 | 回波信号检测 |
-| USB | 1 | PA11/PA12 | 上位机通信 |
-| SPI6 | 1 | PA4-PA7 | DSI3控制和通信 |
-| SPI3 | 1 | PC10-PC12 | CC1101通信 |
-| DSI3 CS | 1 | 可配置(PB3/PB4) | DSI3片选 |
-| CC1101 CS | 1 | 可配置(PB5) | CC1101片选 |
-| CC1101 GDO0 | 1 | 可配置(PB6/PB7) | 数据包检测 |
-| LED指示 | 3 | PB0, PE1, PB14 | 状态指示 |
-| GPIO | 2 | PE6, PD8 | 通用IO |
+| CAN Bus | 2 | PD0/PD1, PB12/PB6 | CAN man-in-the-middle forwarding |
+| Ultrasonic PWM | 2 | PA8, PA9 | 48kHz ultrasonic output |
+| ADC Input | 1 | PA0 | Echo signal detection |
+| USB | 1 | PA11/PA12 | PC communication |
+| SPI6 | 1 | PA4-PA7 | DSI3 control and communication |
+| SPI3 | 1 | PC10-PC12 | CC1101 communication |
+| DSI3 CS | 1 | Configurable (PB3/PB4) | DSI3 chip select |
+| CC1101 CS | 1 | Configurable (PB5) | CC1101 chip select |
+| CC1101 GDO0 | 1 | Configurable (PB6/PB7) | Packet detection |
+| LED Indicators | 3 | PB0, PE1, PB14 | Status indication |
+| GPIO | 2 | PE6, PD8 | General-purpose I/O |
 
-**总计硬件接口**: 17个主要接口
+**Total Hardware Interfaces**: 17 main interfaces
 
-## 7. 注意事项
+## 7. Important Notes
 
-1. **CAN总线**: 需要120Ω终端电阻，建议在CAN_H和CAN_L之间添加
-2. **超声波**: 需要驱动电路，建议使用H桥或专用驱动芯片
-3. **ADC输入**: 回波信号需要信号调理电路，建议使用运放进行放大和滤波
-4. **电源**: 确保3.3V电源稳定，建议使用LDO稳压器
-5. **接地**: 所有GND必须良好连接，避免干扰
+1. **CAN Bus**: Requires a 120Ω termination resistor. It is recommended to add one between CAN_H and CAN_L.
+2. **Ultrasonic**: Requires a driver circuit. Using an H-bridge or dedicated driver chip is recommended.
+3. **ADC Input**: The echo signal requires signal conditioning. Using an operational amplifier for amplification and filtering is recommended.
+4. **Power Supply**: Ensure stable 3.3V power supply. Using an LDO voltage regulator is recommended.
+5. **Grounding**: All GND connections must be well-connected to avoid interference.
 
-## 8. 硬件配置建议
+## 8. Hardware Configuration Recommendations
 
-### 8.1 超声波驱动电路
-- 使用H桥驱动芯片（如DRV8833）或专用超声波驱动芯片
-- 输出功率根据换能器规格调整
-- 建议添加保护电路
+### 8.1 Ultrasonic Driver Circuit
+- Use an H-bridge driver chip (e.g., DRV8833) or a dedicated ultrasonic driver chip.
+- Adjust output power according to transducer specifications.
+- Adding a protection circuit is recommended.
 
-### 8.2 回波检测电路
-- 使用运算放大器进行信号放大
-- 添加带通滤波器（中心频率48kHz）
-- ADC输入范围：0-3.3V
+### 8.2 Echo Detection Circuit
+- Use an operational amplifier for signal amplification.
+- Add a band-pass filter (center frequency 48 kHz).
+- ADC input range: 0-3.3V.
 
-### 8.3 CAN总线接口
-- 使用CAN收发器（如TJA1051）
-- 添加ESD保护
-- 120Ω终端电阻
+### 8.3 CAN Bus Interface
+- Use a CAN transceiver (e.g., TJA1051).
+- Add ESD protection.
+- Include a 120Ω termination resistor.
 
-## 9. 测试接口
+## 9. Test Interfaces
 
-为了方便测试，建议在PCB上添加：
-- 测试点：所有关键信号
-- 跳线：用于配置不同的工作模式
-- 调试接口：SWD接口用于程序下载和调试
-
+For ease of testing, it is recommended to add the following to the PCB:
+- Test points: For all key signals.
+- Jumpers: For configuring different operating modes.
+- Debug interface: SWD interface for program download and debugging.
